@@ -1,70 +1,46 @@
-const Header = (props) => {
-  return (
-    <>
-      <h1>{props.course}</h1>
-    </>
-  );
-};
-const Part = (props) => {
-  return (
-    <>
-      <p>
-        {props.part} {props.exercises}
-      </p>
-    </>
-  );
-};
-const Content = (props) => {
-  return (
-    <>
-      <Part part={props.parts[0].name} exercises={props.parts[0].exercises} />
-      <Part part={props.parts[1].name} exercises={props.parts[1].exercises} />
-      <Part part={props.parts[2].name} exercises={props.parts[2].exercises} />
-    </>
-  );
-};
-const Footer = (props) => {
-  return (
-    <>
-      <p>
-        Number of exercises{" "}
-        {props.parts[0].exercises + props.parts[1].exercises + props.parts[2].exercises}
-      </p>
-    </>
-  );
+import { useState } from "react";
+const History = ({ allClicks }) => {
+  if (allClicks.length === 0) {
+    return <>The app is used by pressing the buttons</>;
+  }
+  return <>button pressed history: {allClicks.join(" ")}</>;
 };
 
 const App = () => {
-  const course = {
-    name:  "Half Stack application development",
-    parts: [
-      {
-        name: 'Fundamentals of React',
-        exercises: 10
-      },
-      {
-        name: 'Using props to pass data',
-        exercises: 7
-      },
-      {
-        name: 'State of a component',
-        exercises: 14
-      }
-    ]
-  }
+  const [left, setLeft] = useState(0);
+  const [right, setRight] = useState(0);
+  const [allClicks, setAllClicks] = useState([]);
+  const [total, setTotal] = useState(0);
+  const onHandleLeftClick = () => {
+    const updatedLeft = left + 1;
+    setLeft(updatedLeft);
+    setAllClicks(allClicks.concat("L"));
+    setTotal(updatedLeft + right);
+  };
 
+  const onHandleRightClick = () => {
+    const updatedRight = right + 1;
+    setRight(updatedRight);
+    setAllClicks(allClicks.concat("R"));
+    setTotal(updatedRight + left);
+  };
 
+  const Button = ({onClick, text}) => <><button onClick={onClick}>{text}</button></>
   return (
     <>
-      <Header course={course.name} />
-      <Content
-        parts={course.parts}
-      />
-      <Footer
-        parts={course.parts}
-      />
+      {left}
+
+      <Button onClick={onHandleLeftClick} text="Left"/>
+      <Button onClick={onHandleRightClick} text="Right"/>
+      {right}
+      <br />
+      <History allClicks={allClicks} />
+
+      <br />
+      {total}
     </>
   );
 };
 
 export default App;
+  
