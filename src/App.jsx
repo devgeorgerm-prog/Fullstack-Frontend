@@ -1,79 +1,75 @@
 import { useState } from "react";
 
-// The Button component is correct as is
-const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>;
-
-const Statistics = ({ good, neutral, bad, allFeedback, average, positive }) => {
-  if (allFeedback == 0) {
-    return <>No feedback given</>;
-  }
-  return (
-    <table>
-      <tbody>
-        <StatisticsLine text="good" value={good} />
-        <StatisticsLine text="neutral" value={neutral} />
-        <StatisticsLine text="bad" value={bad} />
-        <StatisticsLine text="all" value={allFeedback} />
-        <StatisticsLine text="average" value={average} />
-        <StatisticsLine text="positive" value={positive} />
-      </tbody>
-    </table>
-  );
-};
-
-const StatisticsLine = ({ text, value }) => {
-  return (
-    <tr>
-      <td>{text}</td>
-      <td>{value}</td>
-    </tr>
-  );
-};
 const App = () => {
-  // Use state only for the core data
-  const [good, setGood] = useState(0);
-  const [neutral, setNeutral] = useState(0);
-  const [bad, setBad] = useState(0);
+  const [anecdotes, setAnecdotes] = useState([
+    {
+      anecdote: "If it hurts, do it more often.",
+      vote: 0,
+    },
+    {
+      anecdote: "Adding manpower to a late software project makes it later!",
+      vote: 0,
+    },
+    {
+      anecdote:
+        "The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.",
+      vote: 0,
+    },
+    {
+      anecdote:
+        "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
+      vote: 0,
+    },
+    {
+      anecdote: "Premature optimization is the root of all evil.",
+      vote: 0,
+    },
+    {
+      anecdote:
+        "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.",
+      vote: 0,
+    },
+    {
+      anecdote:
+        "Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.",
+      vote: 0,
+    },
+    {
+      anecdote: "The only way to go fast, is to go well.",
+      vote: 0,
+    },
+  ]);
 
-  // Event handler functions
-  const goodFeedback = () => {
-    setGood(good + 1);
+  const anecdotesLength = anecdotes.length;
+  const [selected, setSelected] = useState(0);
+
+  const handleRandomSelection = () => {
+    const randomSelection = Math.floor(Math.random() * anecdotesLength);
+    setSelected(randomSelection);
   };
 
-  const neutralFeedback = () => {
-    setNeutral(neutral + 1);
+  const handleVote = () => {
+    const newAnecdote = [...anecdotes];
+    newAnecdote[selected].vote += 1;
+    setAnecdotes(newAnecdote);
   };
 
-  const badFeedback = () => {
-    setBad(bad + 1);
-  };
-
-  // Calculate derived state values directly
-  const allFeedback = good + neutral + bad;
-  const average = allFeedback > 0 ? (good - bad) / allFeedback : 0;
-  const positive = allFeedback > 0 ? (good / allFeedback) * 100 : 0;
-
+  const mostVoted = anecdotes.reduce((prev, current) => {
+    return (prev.vote > current.vote) ? prev : current;
+  })
+  
   return (
-    <div>
-      <h1>Give Feedback</h1>
-      <div style={{ display: "flex", gap: "1rem" }}>
-        <Button onClick={goodFeedback} text="Good" />
-        <Button onClick={neutralFeedback} text="Neutral" />
-        <Button onClick={badFeedback} text="Bad" />
-      </div>
-
+    <>  
+      <h1>Anecdote of the Day</h1>
+      <div>{anecdotes[selected].anecdote}</div>
+      <div>has {anecdotes[selected].vote} votes</div>
+      <button onClick={handleVote}>Vote</button>
+      <button onClick={handleRandomSelection}>next anecdote</button>
       <br />
-      <h2>Statistics</h2>
-
-      <Statistics
-        good={good}
-        neutral={neutral}
-        bad={bad}
-        allFeedback={allFeedback}
-        average={average.toFixed(2)}
-        positive={`${positive.toFixed(2)}%`}
-      />
-    </div>
+    <h2>Anecdote with most votes</h2>
+    <div>{mostVoted.anecdote}</div>
+    <div>{mostVoted.vote}</div>
+    </>
   );
 };
 
