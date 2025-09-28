@@ -1,122 +1,75 @@
-import { useState } from "react";
-
-const Name = ({ name, number }) => {
-  return (
-    <div>
-      {name} {number}
-    </div>
-  );
-};
-
-const Numbers = ({ persons }) => {
-  return (
-    <>
-      {persons.map((person) => {
-        return (
-          <Name key={person.id} name={person.name} number={person.number} />
-        );
-      })}
-    </>
-  );
-};
-
-const Filter = ({ handleSearch, query }) => {
-  return (
-    <>
-      filter shown with <input value={query} onChange={handleSearch} />
-    </>
-  );
-};
-
-const PersonForm = ({
-  onSubmit,
-  newName,
-  handleInputName,
-  newNumber,
-  handleInputNumber,
-}) => {
-  return (
-    <>
-      <form onSubmit={onSubmit}>
-        <div>
-          name: <input value={newName} onChange={handleInputName} />
-        </div>
-
-        <div>
-          number: <input value={newNumber} onChange={handleInputNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-    </>
-  );
-};
+import { useState, useEffect } from "react";
+import Note from "./Component/Note";
+import noteService from './services/notes'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
-  const [newName, setNewName] = useState("");
-  const [newNumber, setNewNumber] = useState("");
-  const [query, setQuery] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [newNote, setNewnote] = useState("a new note...");
+  const [showAll, setShowAll] = useState(true);
 
-  const handleInputName = (e) => {
-    console.log(e.target.value);
-    setNewName(e.target.value);
-  };
-  const handleInputNumber = (e) => {
-    console.log(e.target.value);
-    setNewNumber(e.target.value);
-  };
-  const handleQuery = (e) => {
-    setQuery(e.target.value);
+  const handleNoteChange = (event) => {
+    console.log(event.target.value);
+    setNewnote(event.target.value);
   };
 
-  const addPerson = (e) => {
-    e.preventDefault();
-    const hasName = persons.some((person) => person.name === newName);
-    const hasNumber = persons.some((person) => person.number === newNumber);
-    if (hasName) {
-      alert(`${newName} is already added to phonebook`);
-      setNewName("");
-      setNewNumber("");
-    } else if (hasNumber) {
-      alert(`${newNumber} is already added to phonebook`);
-      setNewName("");
-      setNewNumber("");
-    } else {
-      const newPerson = {
-        name: newName,
-        number: newNumber,
-        id: persons.length + 1,
-      };
-      setPersons(persons.concat(newPerson));
-      setNewName("");
-      setNewNumber("");
+  useEffect(() => {
+    noteService.getAll().then(initialNotes => {
+      setNotes(initialNotes)
+    })
+  }, []);
+
+  const addNote = (event) => {
+    event.preventDefault();
+    const noteObject = {
+      content: newNote,
+      important: Math.random() < 0.5,
+      id: String(notes.length + 1),
+    };
+
+    noteService.create(noteObject).then(initialNotes => {
+      setNotes(notes.concat(initialNotes))
+      setNewnote("");
+
+    })
+  };
+
+  const toggleImportanceOf = (id) => {
+    const note = notes.find(n => n.id === id)
+    const changedNote = {
+      ...note,
+      important: !note.important
     }
-  };
 
-  const filteredusers = persons.filter((person) =>
-    person.name.toLowerCase().includes(query.toLowerCase())
-  );
+    noteService.update(id, changedNote).then(initialNotes => {
+      setNotes(notes.map(note=>note.id === id ? initialNotes : note))
+    }).catch(error => {
+      alert(
+        `The note '${note.content}' was already deleted from the server` 
+      )
+      setNotes(notes.filter(n => n.id !== id))
+    })
+  } 
+
+  const notesToShow = showAll ? notes : notes.filter((note) => note.important);
+  console.log(notesToShow);
+
   return (
     <div>
-      <h2>Phonebook</h2>
-      <Filter query={query} handleSearch={handleQuery} />
-      <h2>add a new</h2>
-      <PersonForm
-        onSubmit={addPerson}
-        newName={newName}
-        handleInputName={handleInputName}
-        newNumber={newNumber}
-        handleInputNumber={handleInputNumber}
-      />
-      <h2>Numbers</h2>
-      <Numbers persons={filteredusers} />
+      <h1>Notes</h1>
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? "important" : "all"}
+        </button>
+      </div>
+      <ul>
+        {notesToShow.map((note) => (
+          <Note key={note.id} note={note} toggleImportance={() => toggleImportanceOf(note.id)}/>
+        ))}
+      </ul>
+      <form onSubmit={addNote}>
+        <input value={newNote} onChange={handleNoteChange} />
+        <button type="submit">Save</button>
+      </form>
     </div>
   );
 };
