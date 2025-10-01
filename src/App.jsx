@@ -1,31 +1,56 @@
 import { useEffect, useState } from "react";
-import notes from "./services/notes";
 
-const Name = ({ user, handleDelete }) => {
-  console.log('user',user)
+import notes from "./services/notes";
+const Name = ({ user, toggleImportance }) => {
+  const label = user.important ? 'Make Important' : 'Make not important'
   return (
     <div>
-      {user.name} {user.number}{" "}
-      <button onClick={() => handleDelete(user)}>Delete</button>
+      {user.name} {user.number} <button onClick={() => toggleImportance(user.id)}>{label}</button>
     </div>
   );
 };
 
-const Numbers = ({ persons, handleDelete }) => {
-  console.log('numbers', persons)
+const Numbers = ({ persons, toggleImportance }) => {
   return (
     <>
-      {persons.map(user => (
-        <Name 
-          key={user.id} 
-          user={user} 
-          handleDelete={handleDelete} 
-        />
-      ))}
+      {persons.map((person) => {
+        return (
+          <Name key={person.id} user={person} toggleImportance={toggleImportance}/>
+        );
+      })}
     </>
   );
 };
 
+const Notification = ({message}) => {
+  const messageAddStyle = {
+    color: "green",
+    border: '2px green solid',
+    backgroundColor: 'gray',
+    borderRadius: '3px',
+    padding: '1rem'
+  }
+  const messageErrorStyle = {
+    color: "red",
+    border: '2px red solid',
+    backgroundColor: 'gray',
+    borderRadius: '3px',
+    padding: '1rem'
+  }
+  if(message.type === 'added') {
+    return (
+      <div style={messageAddStyle}>
+        {message.message}
+      </div>
+    )
+  } else if (message.type === 'error') {
+    return (
+          <div style={messageErrorStyle}>
+            {message.message}
+          </div>
+        )
+  }
+}
 
 const Filter = ({ handleSearch, query }) => {
   return (
@@ -61,16 +86,22 @@ const PersonForm = ({
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([]);
+  const [persons, setPersons] = useState([
+  ]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [query, setQuery] = useState("");
+  const [message, setMessage] =  useState({
+    message: "",
+    type: ''
+  })
 
-  useEffect(() => {
-    notes.getAll().then((initialContact) => {
-      setPersons(initialContact);
-    });
-  }, []);
+  useEffect(()=>{
+    notes.getAll().then(response => {
+      setPersons(response)
+    })
+  }, [])
+
   const handleInputName = (e) => {
     console.log(e.target.value);
     setNewName(e.target.value);
@@ -88,61 +119,68 @@ const App = () => {
     const hasName = persons.some((person) => person.name === newName);
     const hasNumber = persons.some((person) => person.number === newNumber);
     if (hasName) {
-      const newNumberConfirm = confirm(
-        `${newName} is already added to phonebook, replacet he old number with a new one?`
-      );
-      if (newNumberConfirm) {
-        const oldPerson = persons.find((n) => n.name === newName);
-        const saveNewNumber = {
-          ...oldPerson,
-          number: newNumber,
-        };
-        notes.update(oldPerson.id, saveNewNumber).then((response) => {
-          setPersons(
-            persons.map((person) =>
-              person.id === oldPerson.id ? response : person
-            )
-          );
-        });
-        setNewName("");
-        setNewNumber("");
-      }
+      alert(`${newName} is already added to phonebook`);
+      setNewName("");
+      setNewNumber("");
     } else if (hasNumber) {
       alert(`${newNumber} is already added to phonebook`);
       setNewName("");
       setNewNumber("");
     } else {
-      const personId = persons.length + 1;
       const newPerson = {
         name: newName,
         number: newNumber,
-        id: personId.toString(),
+        id: (persons.length + 1).toString(),
       };
-      notes.create(newPerson).then((created) => {
-        setPersons(persons.concat(created));
+      notes.create(newPerson).then(response => {
+        setPersons(persons.concat(response))
+        const newMessage = {
+          message: `Added ${response.name}`,
+          type: 'added'
+        }
+        setMessage(newMessage)
+        setTimeout(()=> {
+          setMessage({
+            ...message,
+            message: null,
+          })
+        },3000)
         setNewName("");
         setNewNumber("");
-      });
-    }
-  };
-
-  const handleDelete = (person) => {
-    console.log(person);
-    const confirmDelete = confirm(`Delete ${person.name}`);
-    if (confirmDelete) {
-      notes.remove(person.id).then((response) => {
-        setPersons(persons.filter((n) => n.id !== response.id));
-        console.log("deleted");
-      });
+      })
     }
   };
 
   const filteredusers = persons.filter((person) =>
     person.name.toLowerCase().includes(query.toLowerCase())
   );
+  const toggleImportance = (id) => {
+    const person = persons.find(n =>n.id ===id)
+    const changedImportance = {
+      ...person,
+      important: !person.important
+    }
+    notes.update(id, changedImportance).then(response => {
+      setPersons(persons.map(person => person.id === id ? response : person))
+    }).catch(error => {
+      const errMessage = {
+        message: `Information of ${person.name} has already been removed from server`,
+        type: 'error'
+      }
+      setMessage(errMessage)
+      setPersons(persons.filter(n => n.id !== id))
+      setTimeout(() => {
+        setMessage({
+          ...message,
+          message: null
+        })
+      },3000)
+    })
+  }
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message}/>
       <Filter query={query} handleSearch={handleQuery} />
       <h2>add a new</h2>
       <PersonForm
@@ -153,10 +191,9 @@ const App = () => {
         handleInputNumber={handleInputNumber}
       />
       <h2>Numbers</h2>
-      <Numbers persons={filteredusers} handleDelete={handleDelete} />
+      <Numbers persons={filteredusers} toggleImportance={toggleImportance}/>
     </div>
   );
 };
 
 export default App;
-
