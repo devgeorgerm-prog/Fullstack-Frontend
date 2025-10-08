@@ -1,48 +1,96 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const App = () => {
-  const [value, setValue] = useState('')
-  const [rates, setRates] = useState({})
-  // const [currency, setCurrency] = useState(null)
+const Country = ({ country }) => {
+  const imgFlagStyle = {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  };
+  const imgFlagCover = {
+    width: "100%",
+    maxWidth: "150px",
+  };
+  return (
+    <div key={country.name.common}>
+      <h1>{country.name.common}</h1>
+      <div>capital {country.capital}</div>
+      <div>Area {country.area}</div>
+      <h2>Languages</h2>
+      <ul>
+        {Object.entries(country.languages).map(([key, language]) => (
+          <li key={key}>{language}</li>
+        ))}
+      </ul>
+      <div style={imgFlagCover}>
+        <img style={imgFlagStyle} src={country.flags.svg} alt="" />
+      </div>
+    </div>
+  );
+};
 
-  // useEffect(() => {
-  //   console.log('effect run, currency is now', currency)
-
-  //   // skip if currency is not defined
-  //   if (currency) {
-  //     console.log('fetching exchange rates...')
-  //     axios
-  //       .get(`https://open.er-api.com/v6/latest/${currency}`)
-  //       .then(response => {
-  //         setRates(response.data.rates)
-  //       })
-  //   }
-  // }, [currency])
-
-  const handleChange = (event) => {
-    setValue(event.target.value)
+const Filter = ({ countries, handleShowCountry }) => {
+  if (countries.length === 1) {
+    return (
+      <>
+        {countries.map((country) => (
+          <Country key={country.name.common} country={country} />
+        ))}
+      </>
+    );
+  } else if (countries.length < 10) {
+    return (
+      <>
+        {countries.map((country) => (
+          <div key={country.name.common}>
+            {country.name.common}{" "}
+            <button onClick={() => handleShowCountry(country)}>show</button>
+          </div>
+        ))}
+      </>
+    );
+  } else if (countries.length > 10) {
+    return <>Too many matches</>;
   }
+};
 
-  const onSearch = (event) => {
-    event.preventDefault()
-    axios.get(`https://open.er-api.com/v6/latest/${value}`).then(response => {
-      setRates(response.data.rates)
-    })
-    
-  }
+export default function App() {
+  const [findCountry, setFindCountry] = useState("");
+  const [countries, setCountries] = useState([]);
+  const [showCountry, setShowCountry] = useState('');
+
+  useEffect(() => {
+    axios
+      .get("https://studies.cs.helsinki.fi/restcountries/api/all")
+      .then((response) => {
+        setCountries(response.data);
+      });
+  }, []);
+
+  const filteredCountry = countries.filter((country) =>
+    country.name.common.toLowerCase().includes(findCountry.toLowerCase())
+  );
+
+  const handleSearchCountry = (e) => {
+    setFindCountry(e.target.value);
+    setShowCountry('');
+  };
+  
+  const handleShowCountry = (country) => {
+    setShowCountry(country);
+  };
 
   return (
-    <div>
-      <form onSubmit={onSearch}>
-        currency: <input value={value} onChange={handleChange} />
-        <button type="submit">exchange rate</button>
-      </form>
-      <pre>
-        {JSON.stringify(rates, null, 2)}
-      </pre>
-    </div>
-  )
+    <>
+      find countries{" "}
+      <input value={findCountry} onChange={handleSearchCountry} />
+      {findCountry && (
+        <Filter
+          countries={filteredCountry}
+          handleShowCountry={handleShowCountry}
+        />
+      )}
+      {showCountry && <Country country={showCountry} />}
+    </>
+  );
 }
-
-export default App
