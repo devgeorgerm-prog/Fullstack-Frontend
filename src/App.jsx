@@ -28,13 +28,25 @@ const CreateNote = ({addNewNote, handleNewNote, newNote}) => {
     )
 }
 
-
 export default function App() {
     const [getNotes, setNotes] = useState([])
     const [newNote, setNewNote] = useState('')
 
-    const toggleImportance = () => {
+    const toggleImportance = (id) => {
+        const note = getNotes.find(n => n.id === id)
+        const importance = {
+            ...note,
+            important: !note.important
 
+        }
+        notes.update(id, importance).then(response => {
+            setNotes(getNotes.map(note => note.id === id ? response : note))
+        }).catch(error => {
+            alert(
+                `The note '${note.content}' was already deleted from the server`
+            )
+            setNotes(notes.filter(n => n.id !== id))
+        })
     }
 
     const addNewNote = (e) => {

@@ -3,7 +3,7 @@ export default function Note({ note, toggleImportance }) {
     return(
         <li>
             {note.content}
-            <button onClick={toggleImportance}>{label}</button>
+            <button onClick={() => toggleImportance(note.id)}>{label}</button>
         </li>
     )
 }
