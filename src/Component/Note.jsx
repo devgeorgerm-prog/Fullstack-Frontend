@@ -1,9 +1,10 @@
 export default function Note({ note, toggleImportance }) {
     const label = note.important ? 'Make not important' : 'Make important'
-    return (
-        <li className="note">
+    return(
+        <li>
             {note.content}
-            <button onClick={() => toggleImportance(note.id)}>{label}</button>
+            <button onClick={toggleImportance}>{label}</button>
         </li>
-    );
+    )
 }
+
