@@ -4,12 +4,12 @@ import Note from "./Component/Note.jsx";
 import Footer from "./Component/Footer.jsx"
 import './index.css'
 
-const DisplayNote = ({notes, toggleImportance}) => {
+const DisplayNote = ({getNotes, toggleImportance}) => {
 
     return (
         <>
             <ul>
-                {notes.map(note => {
+                {getNotes.map(note => {
                     return <Note key={note.id} note={note} toggleImportance={toggleImportance}/>
                 })}
             </ul>
@@ -76,7 +76,7 @@ export default function App() {
         <>
             <h1>Notes</h1>
             <DisplayNote
-                notes={getNotes}
+                getNotes={getNotes}
                 toggleImportance={toggleImportance}
             />
             <CreateNote
