@@ -3,22 +3,44 @@
     {
       "name": "Arto Hellas",
       "number": "040-123456",
-      "id": "1"
+      "id": "1",
+      "important": false
     },
     {
       "name": "Ada Lovelace",
       "number": "39-44-5323523",
-      "id": "2"
+      "id": "2",
+      "important": false
     },
     {
       "name": "Dan Abramov",
       "number": "12-43-234345",
-      "id": "3"
+      "id": "3",
+      "important": false
     },
     {
       "name": "dfd",
       "number": "343",
-      "id": "5"
+      "id": "4",
+      "important": true
+    },
+    {
+      "id": "5",
+      "name": "fdfdf",
+      "number": "fd",
+      "important": false
+    },
+    {
+      "id": "6",
+      "name": "44",
+      "number": "2",
+      "important": false
+    },
+    {
+      "id": "7",
+      "name": "hffhfh",
+      "number": "2232",
+      "important": false
     }
   ]
 }
