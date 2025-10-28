@@ -3,21 +3,19 @@ import {useEffect, useState} from "react";
 import notes from "./services/notes";
 
 const Name = ({user, toggleImportance}) => {
-    const label = user.important ? 'Make Important' : 'Make not important'
     return (
         <div>
             {user.name} {user.number}
-            <button onClick={() => toggleImportance(user.id)}>{label}</button>
         </div>
     );
 };
 
-const Numbers = ({persons, toggleImportance}) => {
+const Numbers = ({persons}) => {
     return (
         <>
             {persons.map((person) => {
                 return (
-                    <Name key={person.id} user={person} toggleImportance={toggleImportance}/>
+                    <Name key={person.id} user={person}/>
                 );
             })}
         </>
@@ -131,7 +129,6 @@ const App = () => {
             const newPerson = {
                 name: newName,
                 number: newNumber,
-                id: (persons.length + 1).toString(),
             };
             notes.create(newPerson).then(response => {
                 setPersons(persons.concat(response))
@@ -140,6 +137,7 @@ const App = () => {
                     type: 'added'
                 }
                 setMessage(newMessage)
+
                 setTimeout(() => {
                     setMessage({
                         ...message,
@@ -192,7 +190,7 @@ const App = () => {
                 handleInputNumber={handleInputNumber}
             />
             <h2>Numbers</h2>
-            <Numbers persons={filteredusers} toggleImportance={toggleImportance}/>
+            <Numbers persons={filteredusers}/>
         </div>
     );
 };
